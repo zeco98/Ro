@@ -3,10 +3,21 @@
 import sqlite3
 import secrets
 import string
+import sys
+import threading
+import time
 from datetime import date, datetime
 from pathlib import Path
 
-DB_PATH = Path(__file__).resolve().parent.parent / "data.db"
+# عند التشغيل كملف exe (PyInstaller) تُحفظ البيانات بجانب الـ exe
+# وليس في مجلد مؤقت يُحذف — حماية من فقدان البيانات
+if getattr(sys, 'frozen', False):
+    BASE_DIR = Path(sys.executable).resolve().parent
+else:
+    BASE_DIR = Path(__file__).resolve().parent.parent
+
+DB_PATH = BASE_DIR / "data.db"
+BACKUPS_KEEP = 14
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS customers(
@@ -106,6 +117,8 @@ def get_conn():
 
 def init():
     conn = get_conn()
+    # وضع WAL: يحمي القاعدة من التلف عند انقطاع الكهرباء أو إغلاق مفاجئ
+    conn.execute("PRAGMA journal_mode=WAL")
     conn.executescript(SCHEMA)
     for k, v in DEFAULT_SETTINGS.items():
         conn.execute("INSERT OR IGNORE INTO settings(key, value) VALUES(?, ?)", (k, v))
@@ -114,6 +127,43 @@ def init():
                      (secrets.token_hex(32),))
     conn.commit()
     conn.close()
+
+
+def backup():
+    """نسخة احتياطية يومية إلى مجلد backups (تُحفظ آخر 14 نسخة)."""
+    if not DB_PATH.exists():
+        return None
+    backups_dir = BASE_DIR / 'backups'
+    backups_dir.mkdir(exist_ok=True)
+    target = backups_dir / f"backup-{date.today().isoformat()}.db"
+    if target.exists():
+        return target
+    src = sqlite3.connect(DB_PATH)
+    dst = sqlite3.connect(target)
+    try:
+        with dst:
+            src.backup(dst)
+    finally:
+        src.close()
+        dst.close()
+    old_files = sorted(backups_dir.glob('backup-*.db'))
+    for f in old_files[:-BACKUPS_KEEP]:
+        f.unlink()
+    return target
+
+
+def start_auto_backup(interval_hours=6):
+    """نسخ احتياطي تلقائي دوري طوال فترة تشغيل التطبيق."""
+    def loop():
+        while True:
+            try:
+                backup()
+            except Exception:
+                pass
+            time.sleep(interval_hours * 3600)
+    thread = threading.Thread(target=loop, daemon=True, name='auto-backup')
+    thread.start()
+    return thread
 
 
 def get_setting(key, default=''):

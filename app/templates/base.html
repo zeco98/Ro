@@ -30,5 +30,11 @@
   {% endwith %}
   {% block content %}{% endblock %}
 </main>
+{% if request.endpoint in ('dashboard', 'orders', 'late') %}
+<script>
+/* تحديث تلقائي للشاشات الحية كل 30 ثانية لتظهر إنجازات المندوبين فورًا */
+setTimeout(function () { location.reload(); }, 30000);
+</script>
+{% endif %}
 </body>
 </html>

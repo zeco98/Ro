@@ -3,6 +3,8 @@
 from app import bot, db
 
 db.init()
+db.backup()
+db.start_auto_backup(interval_hours=6)
 
 from app.web import create_app  # noqa: E402  (يحتاج قاعدة بيانات مهيأة)
 
