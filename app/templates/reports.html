@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}التقارير{% endblock %}
+{% block content %}
+<h1>التقارير</h1>
+<div class="report-grid">
+  <div>
+    <h2>التعبئات الشهرية</h2>
+    {% if monthly %}
+    <table><tr><th>الشهر</th><th>عدد التعبئات</th></tr>
+      {% for r in monthly %}<tr><td>{{ r.m }}</td><td>{{ r.n }}</td></tr>{% endfor %}
+    </table>
+    {% else %}<p class="muted">لا توجد بيانات بعد.</p>{% endif %}
+  </div>
+  <div>
+    <h2>أكثر المناطق استهلاكًا</h2>
+    {% if areas %}
+    <table><tr><th>المنطقة</th><th>التعبئات</th></tr>
+      {% for r in areas %}<tr><td>{{ r.area or 'بلا منطقة' }}</td><td>{{ r.n }}</td></tr>{% endfor %}
+    </table>
+    {% else %}<p class="muted">لا توجد بيانات بعد.</p>{% endif %}
+  </div>
+  <div>
+    <h2>أداء المندوبين</h2>
+    {% if driver_stats %}
+    <table><tr><th>المندوب</th><th>أنجز</th><th>ألغى</th></tr>
+      {% for r in driver_stats %}<tr><td>{{ r.name }}</td><td>{{ r.delivered }}</td><td>{{ r.canceled }}</td></tr>{% endfor %}
+    </table>
+    {% else %}<p class="muted">لا يوجد مندوبون بعد.</p>{% endif %}
+  </div>
+  <div>
+    <h2>أسباب الإلغاء</h2>
+    {% if cancel_reasons %}
+    <table><tr><th>السبب</th><th>العدد</th></tr>
+      {% for r in cancel_reasons %}<tr><td>{{ r.reason or '—' }}</td><td>{{ r.n }}</td></tr>{% endfor %}
+    </table>
+    {% else %}<p class="muted">لا توجد إلغاءات.</p>{% endif %}
+  </div>
+</div>
+
+<h2>خزانات تالفة / مفقودة / في الصيانة</h2>
+{% if bad_tanks %}
+<table>
+  <tr><th>الرقم</th><th>الحالة</th><th>السبب</th><th>آخر زبون</th><th>تاريخ الصيانة</th></tr>
+  {% for t in bad_tanks %}
+  <tr>
+    <td>{{ t.number }}</td>
+    <td><span class="badge tk-{{ t.status }}">{{ TANK_STATUS[t.status] }}</span></td>
+    <td>{{ t.damage_reason or '—' }}</td>
+    <td>{{ t.customer_name or '—' }}</td>
+    <td>{{ t.maintenance_date or '—' }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% else %}<p class="muted">كل الخزانات سليمة 🎉</p>{% endif %}
+{% endblock %}

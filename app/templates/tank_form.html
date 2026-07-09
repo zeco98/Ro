@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'تعديل خزان' if t else 'خزان جديد' }}{% endblock %}
+{% block content %}
+<h1>{{ 'تعديل الخزان ' + t.number if t else 'خزان جديد' }}</h1>
+<form method="post" class="form-grid">
+  <label>رقم الخزان * <input name="number" required value="{{ t.number if t }}"></label>
+  <label>السعة (لتر)
+    <select name="capacity">
+      {% for cap in (400, 500) %}
+      <option value="{{ cap }}" {{ 'selected' if t and t.capacity==cap }}>{{ cap }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>الحالة
+    <select name="status">
+      {% for key, label in TANK_STATUS.items() %}
+      <option value="{{ key }}" {{ 'selected' if t and t.status==key }}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>عند الزبون
+    <select name="customer_id">
+      <option value="">— بلا زبون —</option>
+      {% for c in customers %}
+      <option value="{{ c.id }}" {{ 'selected' if t and t.customer_id==c.id }}>{{ c.name }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>تاريخ التسليم <input type="date" name="delivered_date" value="{{ t.delivered_date or '' if t }}"></label>
+  <label>تاريخ الصيانة <input type="date" name="maintenance_date" value="{{ t.maintenance_date or '' if t }}"></label>
+  <label>سبب التلف <input name="damage_reason" value="{{ t.damage_reason or '' if t }}"></label>
+  <label class="full">ملاحظات <textarea name="notes">{{ t.notes or '' if t }}</textarea></label>
+  <div class="full">
+    <button class="btn btn-primary">حفظ</button>
+    <a class="btn" href="{{ url_for('tanks') }}">رجوع</a>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'تعديل مندوب' if d else 'مندوب جديد' }}{% endblock %}
+{% block content %}
+<h1>{{ 'تعديل: ' + d.name if d else 'مندوب جديد' }}</h1>
+<form method="post" class="form-grid">
+  <label>الاسم * <input name="name" required value="{{ d.name if d }}"></label>
+  <label>الهاتف <input name="phone" value="{{ d.phone or '' if d }}"></label>
+  <label>السيارة <input name="car" value="{{ d.car or '' if d }}"></label>
+  <label>المناطق التي يخدمها <input name="areas" value="{{ d.areas or '' if d }}"></label>
+  {% if d %}
+  <label class="checkline"><input type="checkbox" name="active" {{ 'checked' if d.active }}> فعّال (تصله الطلبات)</label>
+  {% endif %}
+  <div class="full">
+    <button class="btn btn-primary">حفظ</button>
+    <a class="btn" href="{{ url_for('drivers') }}">رجوع</a>
+  </div>
+</form>
+{% endblock %}

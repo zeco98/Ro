@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}لوحة التحكم — {{ factory_name }}{% endblock %}
+{% block content %}
+<h1>لوحة التحكم</h1>
+<div class="cards">
+  <div class="card"><div class="num">{{ stats.orders_today }}</div><div>طلبات اليوم</div></div>
+  <div class="card ok"><div class="num">{{ stats.delivered_today }}</div><div>تعبئات اليوم</div></div>
+  <div class="card bad"><div class="num">{{ stats.canceled_today }}</div><div>إلغاءات اليوم</div></div>
+  <div class="card warn"><div class="num">{{ stats.open_now }}</div><div>طلبات قيد التنفيذ</div></div>
+  <div class="card bad"><div class="num">{{ stats.late }}</div><div>مشتركون متأخرون</div></div>
+  <div class="card warn"><div class="num">{{ stats.soon }}</div><div>سينتهي قريبًا</div></div>
+  <div class="card"><div class="num">{{ stats.new_customers_month }}</div><div>مشتركون جدد هذا الشهر</div></div>
+  <div class="card"><div class="num">{{ stats.tanks_out }}</div><div>خزانات عند الزبائن</div></div>
+</div>
+
+<h2>طلبات اليوم</h2>
+{% if today_orders %}
+<table>
+  <tr><th>#</th><th>المشترك</th><th>الخزان</th><th>المنطقة</th><th>المندوب</th><th>الحالة</th><th>الوقت</th></tr>
+  {% for o in today_orders %}
+  <tr>
+    <td>{{ o.id }}</td>
+    <td>{{ o.customer_name }}</td>
+    <td>{{ o.tank_number or '—' }}</td>
+    <td>{{ o.area or '—' }}</td>
+    <td>{{ o.driver_name or '—' }}</td>
+    <td><span class="badge st-{{ o.status }}">{{ ORDER_STATUS[o.status] }}</span>
+        {% if o.status == 'delivered' %}<small>{{ o.delivered_at[11:] }}</small>{% endif %}
+        {% if o.status == 'canceled' and o.cancel_reason %}<small>({{ o.cancel_reason }})</small>{% endif %}</td>
+    <td>{{ o.created_at[11:] }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% else %}<p class="muted">لا توجد طلبات اليوم بعد.</p>{% endif %}
+
+<h2>أكثر المتأخرين</h2>
+{% if late_list %}
+<table>
+  <tr><th>المشترك</th><th>الهاتف</th><th>المنطقة</th><th>آخر تعبئة</th><th>التأخير</th></tr>
+  {% for c, info in late_list %}
+  <tr>
+    <td><a href="{{ url_for('customer_edit', cid=c.id) }}">{{ c.name }}</a></td>
+    <td>{{ c.phone or '—' }}</td>
+    <td>{{ c.area or '—' }}</td>
+    <td>{{ info.last or '—' }}</td>
+    <td><span class="badge st-canceled">{{ info.label }}</span></td>
+  </tr>
+  {% endfor %}
+</table>
+{% else %}<p class="muted">لا يوجد متأخرون 🎉</p>{% endif %}
+{% endblock %}

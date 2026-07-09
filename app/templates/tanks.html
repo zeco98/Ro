@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}الخزانات{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>الخزانات ({{ items|length }})</h1>
+  <a class="btn btn-primary" href="{{ url_for('tank_new') }}">➕ خزان جديد</a>
+</div>
+<form method="get" class="searchbar">
+  <input name="q" value="{{ q }}" placeholder="بحث برقم الخزان أو اسم الزبون">
+  <button class="btn">بحث</button>
+</form>
+<table>
+  <tr><th>الرقم</th><th>السعة</th><th>الحالة</th><th>عند</th><th>تاريخ التسليم</th><th>آخر تعبئة</th><th>عدد التعبئات</th><th></th></tr>
+  {% for t in items %}
+  <tr>
+    <td>{{ t.number }}</td>
+    <td>{{ t.capacity }} لتر</td>
+    <td><span class="badge tk-{{ t.status }}">{{ TANK_STATUS[t.status] }}</span>
+        {% if t.damage_reason %}<small>({{ t.damage_reason }})</small>{% endif %}</td>
+    <td>{{ t.customer_name or '—' }}</td>
+    <td>{{ t.delivered_date or '—' }}</td>
+    <td>{{ t.last_fill_date or '—' }}</td>
+    <td>{{ t.fill_count }}</td>
+    <td><a class="btn btn-sm" href="{{ url_for('tank_edit', tid=t.id) }}">تعديل</a></td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

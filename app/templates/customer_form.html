@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'تعديل مشترك' if c else 'مشترك جديد' }}{% endblock %}
+{% block content %}
+<h1>{{ 'تعديل: ' + c.name if c else 'مشترك جديد' }}</h1>
+<form method="post" class="form-grid">
+  <label>رقم الاشتراك <input name="sub_no" value="{{ c.sub_no or '' if c }}"></label>
+  <label>اسم صاحب المنزل * <input name="name" required value="{{ c.name if c }}"></label>
+  <label>رقم الهاتف <input name="phone" value="{{ c.phone or '' if c }}"></label>
+  <label>المحافظة <input name="governorate" value="{{ c.governorate or '' if c }}"></label>
+  <label>المنطقة <input name="area" value="{{ c.area or '' if c }}"></label>
+  <label>الشارع <input name="street" value="{{ c.street or '' if c }}"></label>
+  <label>أقرب نقطة دالة <input name="landmark" value="{{ c.landmark or '' if c }}"></label>
+  <label>رابط الموقع (Google Maps) <input name="maps_url" dir="ltr" value="{{ c.maps_url or '' if c }}"></label>
+  <label>تاريخ بداية الاشتراك <input type="date" name="sub_start_date" value="{{ c.sub_start_date or '' if c }}"></label>
+  {% if c %}
+  <label>حالة الاشتراك
+    <select name="sub_status">
+      <option value="active" {{ 'selected' if c.sub_status=='active' }}>نشط</option>
+      <option value="suspended" {{ 'selected' if c.sub_status=='suspended' }}>موقوف</option>
+    </select>
+  </label>
+  {% endif %}
+  <label class="full">ملاحظات <textarea name="notes">{{ c.notes or '' if c }}</textarea></label>
+  <div class="full">
+    <button class="btn btn-primary">حفظ</button>
+    <a class="btn" href="{{ url_for('customers') }}">رجوع</a>
+  </div>
+</form>
+{% if c and tanks %}
+<h2>خزانات المشترك</h2>
+<table>
+  <tr><th>الرقم</th><th>السعة</th><th>الحالة</th><th>آخر تعبئة</th><th>عدد التعبئات</th><th></th></tr>
+  {% for t in tanks %}
+  <tr>
+    <td>{{ t.number }}</td><td>{{ t.capacity }} لتر</td>
+    <td>{{ TANK_STATUS[t.status] }}</td>
+    <td>{{ t.last_fill_date or '—' }}</td><td>{{ t.fill_count }}</td>
+    <td><a class="btn btn-sm" href="{{ url_for('tank_edit', tid=t.id) }}">تعديل</a></td>
+  </tr>
+  {% endfor %}
+</table>
+{% endif %}
+{% endblock %}

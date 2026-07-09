@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}إنشاء طلب{% endblock %}
+{% block content %}
+<h1>إنشاء طلب تعبئة</h1>
+<form method="get" class="searchbar">
+  <input name="q" value="{{ q }}" placeholder="ابحث برقم الخزان / اسم المشترك / الهاتف / المنطقة" autofocus>
+  <button class="btn btn-primary">بحث</button>
+</form>
+
+{% if q and not results %}
+<p class="muted">لا توجد نتائج للبحث «{{ q }}».</p>
+{% endif %}
+
+{% for c, info, tanks in results %}
+<div class="result-card">
+  <div class="result-head">
+    <strong>{{ c.name }}</strong>
+    <span class="badge cy-{{ info.key }}">{{ info.label }}</span>
+  </div>
+  <div class="muted">
+    📞 {{ c.phone or '—' }} • 📍 {{ c.area or '—' }} {{ c.street or '' }}
+    {% if c.landmark %}• 🏷 {{ c.landmark }}{% endif %}
+  </div>
+  <form method="post" action="{{ url_for('order_create') }}" class="order-line">
+    <input type="hidden" name="customer_id" value="{{ c.id }}">
+    <select name="tank_id">
+      <option value="">بلا خزان محدد</option>
+      {% for t in tanks %}
+      <option value="{{ t.id }}">خزان {{ t.number }} — {{ t.capacity }} لتر
+        (آخر تعبئة: {{ t.last_fill_date or 'لا يوجد' }})</option>
+      {% endfor %}
+    </select>
+    <input name="notes" placeholder="ملاحظة للمندوب (اختياري)">
+    <button class="btn btn-primary">📦 إنشاء الطلب وإرساله للمندوبين</button>
+  </form>
+</div>
+{% endfor %}
+{% endblock %}

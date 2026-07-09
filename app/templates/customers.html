@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}المشتركون{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>المشتركون ({{ items|length }})</h1>
+  <a class="btn btn-primary" href="{{ url_for('customer_new') }}">➕ مشترك جديد</a>
+</div>
+<form method="get" class="searchbar">
+  <input name="q" value="{{ q }}" placeholder="بحث بالاسم / الهاتف / المنطقة / رقم الخزان">
+  <button class="btn">بحث</button>
+</form>
+<table>
+  <tr><th>رقم</th><th>الاسم</th><th>الهاتف</th><th>المنطقة</th><th>الخزانات</th><th>حالة الاشتراك</th><th></th></tr>
+  {% for c, info in items %}
+  <tr>
+    <td>{{ c.sub_no or c.id }}</td>
+    <td>{{ c.name }}</td>
+    <td>{{ c.phone or '—' }}</td>
+    <td>{{ c.area or '—' }}</td>
+    <td>{{ c.tank_numbers or '—' }}</td>
+    <td><span class="badge cy-{{ info.key }}">{{ info.label }}</span></td>
+    <td class="actions">
+      <a class="btn btn-sm" href="{{ url_for('order_new', q=c.phone or c.name) }}">طلب</a>
+      <a class="btn btn-sm" href="{{ url_for('customer_edit', cid=c.id) }}">تعديل</a>
+      <form method="post" action="{{ url_for('customer_delete', cid=c.id) }}" style="display:inline"
+            onsubmit="return confirm('حذف المشترك {{ c.name }}؟')">
+        <button class="btn btn-sm btn-danger">حذف</button>
+      </form>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

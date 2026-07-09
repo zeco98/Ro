@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}الطلبات{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>الطلبات</h1>
+  <a class="btn btn-primary" href="{{ url_for('order_new') }}">➕ إنشاء طلب</a>
+</div>
+<div class="filterbar">
+  <a class="btn btn-sm {{ 'btn-primary' if not status }}" href="{{ url_for('orders') }}">الكل</a>
+  {% for key, label in ORDER_STATUS.items() %}
+  <a class="btn btn-sm {{ 'btn-primary' if status==key }}" href="{{ url_for('orders', status=key) }}">{{ label }}</a>
+  {% endfor %}
+</div>
+<table>
+  <tr><th>#</th><th>التاريخ</th><th>المشترك</th><th>الخزان</th><th>المنطقة</th><th>المندوب</th><th>الحالة</th><th></th></tr>
+  {% for o in items %}
+  <tr>
+    <td>{{ o.id }}</td>
+    <td>{{ o.created_at }}</td>
+    <td>{{ o.customer_name }}<br><small>{{ o.customer_phone or '' }}</small></td>
+    <td>{{ o.tank_number or '—' }} {% if o.capacity %}<small>({{ o.capacity }}ل)</small>{% endif %}</td>
+    <td>{{ o.area or '—' }}</td>
+    <td>{{ o.driver_name or '—' }}</td>
+    <td><span class="badge st-{{ o.status }}">{{ ORDER_STATUS[o.status] }}</span>
+      {% if o.status=='delivered' %}<small>{{ o.delivered_at }}</small>{% endif %}
+      {% if o.status=='canceled' and o.cancel_reason %}<small>({{ o.cancel_reason }})</small>{% endif %}
+    </td>
+    <td class="actions">
+      {% if o.status in ('open', 'claimed', 'postponed') %}
+      <form method="post" action="{{ url_for('order_deliver', oid=o.id) }}" style="display:inline">
+        <button class="btn btn-sm">✅ تسليم</button>
+      </form>
+      <form method="post" action="{{ url_for('order_cancel', oid=o.id) }}" style="display:inline">
+        <button class="btn btn-sm btn-danger">إلغاء</button>
+      </form>
+      {% endif %}
+      {% if o.status in ('postponed', 'canceled', 'open') %}
+      <form method="post" action="{{ url_for('order_resend', oid=o.id) }}" style="display:inline">
+        <button class="btn btn-sm">🔁 إعادة إرسال</button>
+      </form>
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

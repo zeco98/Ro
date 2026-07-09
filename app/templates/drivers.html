@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}المندوبون{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>المندوبون</h1>
+  <a class="btn btn-primary" href="{{ url_for('driver_new') }}">➕ مندوب جديد</a>
+</div>
+<table>
+  <tr><th>الاسم</th><th>الهاتف</th><th>السيارة</th><th>المناطق</th><th>تيليجرام</th>
+      <th>طلبات اليوم</th><th>أنجز اليوم</th><th>إجمالي المنجز</th><th>الملغي</th><th></th></tr>
+  {% for d in items %}
+  <tr class="{{ '' if d.active else 'inactive-row' }}">
+    <td>{{ d.name }} {% if not d.active %}<small>(موقوف)</small>{% endif %}</td>
+    <td>{{ d.phone or '—' }}</td>
+    <td>{{ d.car or '—' }}</td>
+    <td>{{ d.areas or '—' }}</td>
+    <td>
+      {% if d.telegram_chat_id %}
+        <span class="badge cy-active">مرتبط ✅</span>
+      {% else %}
+        <span class="badge cy-soon">رمز الربط: <b dir="ltr">{{ d.link_code }}</b></span>
+      {% endif %}
+    </td>
+    <td>{{ d.today_orders }}</td>
+    <td>{{ d.today_done }}</td>
+    <td>{{ d.total_done }}</td>
+    <td>{{ d.total_canceled }}</td>
+    <td class="actions">
+      <a class="btn btn-sm" href="{{ url_for('driver_edit', did=d.id) }}">تعديل</a>
+      <form method="post" action="{{ url_for('driver_newcode', did=d.id) }}" style="display:inline"
+            onsubmit="return confirm('إنشاء رمز جديد سيلغي ربط تيليجرام الحالي. متابعة؟')">
+        <button class="btn btn-sm">رمز جديد</button>
+      </form>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+<p class="muted">لربط مندوب: أعطه رمز الربط ليفتح البوت في تيليجرام ويرسل الرمز كرسالة.</p>
+{% endblock %}
