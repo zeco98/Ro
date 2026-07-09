@@ -6,7 +6,7 @@
   <a class="btn btn-primary" href="{{ url_for('driver_new') }}">➕ مندوب جديد</a>
 </div>
 <table>
-  <tr><th>الاسم</th><th>الهاتف</th><th>السيارة</th><th>المناطق</th><th>تيليجرام</th>
+  <tr><th>الاسم</th><th>الهاتف</th><th>السيارة</th><th>المناطق</th><th>البوت</th><th>تيليجرام</th>
       <th>طلبات اليوم</th><th>أنجز اليوم</th><th>إجمالي المنجز</th><th>الملغي</th><th></th></tr>
   {% for d in items %}
   <tr class="{{ '' if d.active else 'inactive-row' }}">
@@ -14,6 +14,10 @@
     <td>{{ d.phone or '—' }}</td>
     <td>{{ d.car or '—' }}</td>
     <td>{{ d.areas or '—' }}</td>
+    <td>
+      {% if d.bot_token %}<span class="badge cy-active">بوت خاص</span>
+      {% else %}<span class="badge cy-none">البوت العام</span>{% endif %}
+    </td>
     <td>
       {% if d.telegram_chat_id %}
         <span class="badge cy-active">مرتبط ✅</span>

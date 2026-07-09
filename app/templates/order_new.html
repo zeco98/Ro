@@ -30,8 +30,14 @@
         (آخر تعبئة: {{ t.last_fill_date or 'لا يوجد' }})</option>
       {% endfor %}
     </select>
+    <select name="driver_id">
+      <option value="">📢 كل المندوبين</option>
+      {% for d in drivers %}
+      <option value="{{ d.id }}">🚚 {{ d.name }}{% if d.car %} — {{ d.car }}{% endif %}{% if d.phone %} ({{ d.phone }}){% endif %}</option>
+      {% endfor %}
+    </select>
     <input name="notes" placeholder="ملاحظة للمندوب (اختياري)">
-    <button class="btn btn-primary">📦 إنشاء الطلب وإرساله للمندوبين</button>
+    <button class="btn btn-primary">📦 إنشاء الطلب وإرساله</button>
   </form>
 </div>
 {% endfor %}

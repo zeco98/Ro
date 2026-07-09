@@ -6,22 +6,25 @@
   <label>اسم المعمل <input name="factory_name" value="{{ values.factory_name }}"></label>
   <label>مدة دورة التعبئة (يوم) <input type="number" name="cycle_days" min="1" value="{{ values.cycle_days }}"></label>
   <label>التنبيه قبل الانتهاء بـ (يوم) <input type="number" name="warn_days" min="0" value="{{ values.warn_days }}"></label>
-  <label class="full">رمز بوت تيليجرام (Bot Token)
+  <label class="full">رمز البوت العام الاحتياطي (Bot Token)
     <input name="bot_token" dir="ltr" value="{{ values.bot_token }}"
            placeholder="123456789:AAF...">
   </label>
+  <p class="muted full">يُستخدم فقط للمندوبين الذين ليس لهم بوت خاص —
+     الأفضل وضع بوت خاص لكل مندوب من صفحة تعديل المندوب.</p>
   <label>تغيير كلمة المرور <input type="password" name="admin_password" placeholder="اتركه فارغًا للإبقاء عليها"></label>
   <div class="full">
     <button class="btn btn-primary">حفظ</button>
   </div>
 </form>
 <div class="hint">
-  <h2>كيف تحصل على رمز البوت؟</h2>
+  <h2>كيف تجهّز بوتًا لكل مندوب؟</h2>
   <ol>
     <li>افتح تيليجرام وابحث عن <b dir="ltr">@BotFather</b>.</li>
-    <li>أرسل <b dir="ltr">/newbot</b> واختر اسمًا للبوت.</li>
-    <li>انسخ الرمز (Token) والصقه في الحقل أعلاه واحفظ — سيعمل البوت خلال ثوانٍ دون إعادة تشغيل.</li>
-    <li>من صفحة المندوبين: أضف مندوبًا وأعطه رمز الربط ليرسله للبوت.</li>
+    <li>أرسل <b dir="ltr">/newbot</b> واختر اسمًا للبوت (مثلًا: بوت المندوب حسن).</li>
+    <li>انسخ الرمز (Token) والصقه في <b>بطاقة المندوب</b> من صفحة المندوبين — سيعمل خلال ثوانٍ دون إعادة تشغيل.</li>
+    <li>أعط المندوب رمز الربط (6 أحرف) ليفتح بوته ويرسله كرسالة.</li>
+    <li>كرر الخطوات لكل مندوب — بوت مستقل لكل واحد لتجنب أي تداخل.</li>
   </ol>
 </div>
 {% endblock %}

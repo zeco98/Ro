@@ -246,31 +246,41 @@ def create_app():
     @app.route('/orders/new')
     def order_new():
         q = request.args.get('q', '').strip()
+        conn = db.get_conn()
+        active_drivers = conn.execute(
+            "SELECT * FROM drivers WHERE active=1 ORDER BY name").fetchall()
         results = []
         if q:
-            conn = db.get_conn()
             pairs = db.customers_with_cycle(conn, q)
             for c, info in pairs:
                 c_tanks = conn.execute(
                     "SELECT * FROM tanks WHERE customer_id=?", (c['id'],)).fetchall()
                 results.append((c, info, c_tanks))
-            conn.close()
-        return render_template('order_new.html', q=q, results=results)
+        conn.close()
+        return render_template('order_new.html', q=q, results=results,
+                               drivers=active_drivers)
 
     @app.route('/orders/create', methods=['POST'])
     def order_create():
         customer_id = int(request.form['customer_id'])
         tank_id = int(request.form['tank_id']) if request.form.get('tank_id') else None
         notes = request.form.get('notes', '').strip() or None
+        only_driver = int(request.form['driver_id']) if request.form.get('driver_id') else None
         conn = db.get_conn()
         cur = conn.execute(
             "INSERT INTO orders(customer_id, tank_id, notes, status, created_at) "
             "VALUES(?,?,?,'open',?)", (customer_id, tank_id, notes, db.now_str()))
         conn.commit()
         oid = cur.lastrowid
+        driver_name = None
+        if only_driver:
+            row = conn.execute("SELECT name FROM drivers WHERE id=?", (only_driver,)).fetchone()
+            driver_name = row['name'] if row else None
         conn.close()
-        sent = bot.broadcast_order(oid)
-        if sent:
+        sent = bot.broadcast_order(oid, only_driver_id=only_driver)
+        if sent and driver_name:
+            flash(f'أُنشئ الطلب #{oid} وأُرسل إلى المندوب {driver_name}', 'ok')
+        elif sent:
             flash(f'أُنشئ الطلب #{oid} وأُرسل إلى {sent} مندوب', 'ok')
         else:
             flash(f'أُنشئ الطلب #{oid} — لم يُرسل لأي مندوب '
@@ -347,13 +357,15 @@ def create_app():
             else:
                 conn = db.get_conn()
                 conn.execute(
-                    "INSERT INTO drivers(name, phone, car, areas, link_code) VALUES(?,?,?,?,?)",
+                    "INSERT INTO drivers(name, phone, car, areas, link_code, bot_token) "
+                    "VALUES(?,?,?,?,?,?)",
                     (name, f.get('phone', '').strip() or None,
                      f.get('car', '').strip() or None,
-                     f.get('areas', '').strip() or None, db.new_link_code()))
+                     f.get('areas', '').strip() or None, db.new_link_code(),
+                     f.get('bot_token', '').strip() or None))
                 conn.commit()
                 conn.close()
-                flash('أُضيف المندوب — أعطه رمز الربط ليرسله إلى البوت', 'ok')
+                flash('أُضيف المندوب — أعطه رمز الربط ليرسله إلى بوته', 'ok')
                 return redirect(url_for('drivers'))
         return render_template('driver_form.html', d=None)
 
@@ -368,9 +380,11 @@ def create_app():
         if request.method == 'POST':
             f = request.form
             conn.execute(
-                "UPDATE drivers SET name=?, phone=?, car=?, areas=?, active=? WHERE id=?",
+                "UPDATE drivers SET name=?, phone=?, car=?, areas=?, bot_token=?, active=? "
+                "WHERE id=?",
                 (f.get('name', '').strip(), f.get('phone', '').strip() or None,
                  f.get('car', '').strip() or None, f.get('areas', '').strip() or None,
+                 f.get('bot_token', '').strip() or None,
                  1 if f.get('active') else 0, did))
             conn.commit()
             conn.close()

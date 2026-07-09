@@ -7,6 +7,13 @@
   <label>الهاتف <input name="phone" value="{{ d.phone or '' if d }}"></label>
   <label>السيارة <input name="car" value="{{ d.car or '' if d }}"></label>
   <label>المناطق التي يخدمها <input name="areas" value="{{ d.areas or '' if d }}"></label>
+  <label class="full">رمز بوت المندوب الخاص (Token)
+    <input name="bot_token" dir="ltr" value="{{ d.bot_token or '' if d }}"
+           placeholder="123456789:AAF...">
+  </label>
+  <p class="muted full">لكل مندوب بوت خاص به: أنشئه من <b dir="ltr">@BotFather</b> بأمر
+     <b dir="ltr">/newbot</b> والصق رمزه هنا. سيعمل خلال ثوانٍ دون إعادة تشغيل.
+     إن تُرك فارغًا يُستخدم البوت العام من الإعدادات.</p>
   {% if d %}
   <label class="checkline"><input type="checkbox" name="active" {{ 'checked' if d.active }}> فعّال (تصله الطلبات)</label>
   {% endif %}

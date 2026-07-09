@@ -56,6 +56,8 @@ CREATE TABLE IF NOT EXISTS drivers(
   areas TEXT,
   telegram_chat_id INTEGER,
   link_code TEXT,
+  bot_token TEXT,
+  pending_loc_order INTEGER,
   active INTEGER NOT NULL DEFAULT 1
 );
 CREATE TABLE IF NOT EXISTS orders(
@@ -74,7 +76,8 @@ CREATE TABLE IF NOT EXISTS order_messages(
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   order_id INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
   chat_id INTEGER NOT NULL,
-  message_id INTEGER NOT NULL
+  message_id INTEGER NOT NULL,
+  driver_id INTEGER
 );
 CREATE TABLE IF NOT EXISTS settings(
   key TEXT PRIMARY KEY,
@@ -115,11 +118,22 @@ def get_conn():
     return conn
 
 
+def _add_column(conn, table, coldef):
+    """ترقية قواعد البيانات القديمة بإضافة الأعمدة الجديدة دون فقدان بيانات."""
+    col = coldef.split()[0]
+    existing = [r[1] for r in conn.execute(f"PRAGMA table_info({table})")]
+    if col not in existing:
+        conn.execute(f"ALTER TABLE {table} ADD COLUMN {coldef}")
+
+
 def init():
     conn = get_conn()
     # وضع WAL: يحمي القاعدة من التلف عند انقطاع الكهرباء أو إغلاق مفاجئ
     conn.execute("PRAGMA journal_mode=WAL")
     conn.executescript(SCHEMA)
+    _add_column(conn, 'drivers', 'bot_token TEXT')
+    _add_column(conn, 'drivers', 'pending_loc_order INTEGER')
+    _add_column(conn, 'order_messages', 'driver_id INTEGER')
     for k, v in DEFAULT_SETTINGS.items():
         conn.execute("INSERT OR IGNORE INTO settings(key, value) VALUES(?, ?)", (k, v))
     if not conn.execute("SELECT value FROM settings WHERE key='secret_key'").fetchone():
